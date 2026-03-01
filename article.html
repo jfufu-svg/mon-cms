@@ -281,7 +281,8 @@ function render(post) {
 
   var activeSections = SECTIONS.slice();
 
-  var hasDocs = Array.isArray(post.documents) && post.documents.length > 0;
+  var hasDocs = true;
+  var docList = Array.isArray(post.documents) ? post.documents : [];
 
   if (true) {
     html += '<div class="section-tabs-bar">';
@@ -310,7 +311,8 @@ function render(post) {
       html += '<div class="section-pane' + (firstActive ? ' active' : '') + '" id="section-pane-documents">';
       html += '<div class="section-pane-title">Documents à télécharger</div>';
       html += '<div class="doc-download-list">';
-      post.documents.forEach(function(doc, i) {
+      if (docList.length === 0) { html += '<p style="color:var(--text-muted);font-style:italic;font-size:0.85rem;padding:0.5rem 0;">Aucun document disponible.</p>'; }
+      docList.forEach(function(doc, i) {
         var icon = getDocIcon(doc.type);
         var size = formatDocSize(doc.size);
         html += '<a class="doc-download-item" href="' + esc(doc.data) + '" download="' + esc(doc.name) + '">' +
