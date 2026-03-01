@@ -279,13 +279,11 @@ function render(post) {
   var SECTIONS = ['general', 'pedagogie', 'financier', 'marketing', 'commerce'];
   var LABELS = { general: 'Général', pedagogie: 'Pédagogie', financier: 'Financier', marketing: 'Marketing', commerce: 'Commerce' };
 
-  var activeSections = SECTIONS.filter(function(name) {
-    return post.sections && post.sections[name] && post.sections[name].blocks && post.sections[name].blocks.length > 0;
-  });
+  var activeSections = SECTIONS.slice();
 
   var hasDocs = Array.isArray(post.documents) && post.documents.length > 0;
 
-  if (activeSections.length > 0 || hasDocs) {
+  if (true) {
     html += '<div class="section-tabs-bar">';
     html += '<div class="section-tabs-nav">';
     var firstActive = true;
@@ -300,7 +298,7 @@ function render(post) {
 
     firstActive = true;
     activeSections.forEach(function(name) {
-      var sBlocks = post.sections[name].blocks || [];
+      var sBlocks = (post.sections && post.sections[name] && post.sections[name].blocks) || [];
       html += '<div class="section-pane' + (firstActive ? ' active' : '') + '" id="section-pane-' + name + '">';
       html += '<div class="section-pane-title">' + LABELS[name] + '</div>';
       html += '<div class="article-content">' + sBlocks.map(renderBlock).join('') + '</div>';
