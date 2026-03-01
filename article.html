@@ -204,7 +204,8 @@ async function loadPost(id) {
     seo: data.seo || '',
     cover: data.cover || '',
     content: data.content || { blocks: [] },
-    sections: data.sections || {}
+    sections: data.sections || {},
+    documents: Array.isArray(data.documents) ? data.documents : []
   };
 }
 
