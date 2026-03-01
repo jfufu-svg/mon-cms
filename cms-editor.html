@@ -772,10 +772,17 @@ function savePost() {
         if (!upErr) {
           var { data: urlData } = supabase.storage.from('documents').getPublicUrl(path);
           uploadedDocs.push({ name: doc.name, size: doc.size, type: doc.type, url: urlData.publicUrl });
+          showToast('✓ Document chargé : ' + doc.name, 'success');
         } else {
+          showToast('Erreur upload "' + doc.name + '" : ' + upErr.message, 'error');
+          console.error('Upload Storage échoué :', upErr);
           uploadedDocs.push({ name: doc.name, size: doc.size, type: doc.type });
         }
-      } catch(e) { uploadedDocs.push({ name: doc.name, size: doc.size, type: doc.type }); }
+      } catch(e) {
+        showToast('Erreur upload "' + doc.name + '" : ' + e.message, 'error');
+        console.error('Exception upload :', e);
+        uploadedDocs.push({ name: doc.name, size: doc.size, type: doc.type });
+      }
     }
     postDocuments = uploadedDocs;
 
