@@ -89,26 +89,23 @@
 
     /* EDITOR AREA */
     .editor-area { flex: 1; overflow-y: auto; overflow-x: visible; display: flex; flex-direction: column; background: var(--bg); position: relative; }
-    .editor-title-area { max-width: 1100px; margin: 1.5rem auto 0; padding: 0 2rem 0 3.5rem; width: 100%; }
+    .editor-title-area { padding: 1.5rem 2rem 0 4rem; width: 100%; }
     .post-title-input { font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1.15; border: none; outline: none; background: transparent; color: var(--text); width: 100%; resize: none; letter-spacing: -0.03em; overflow: hidden; }
     .post-title-input::placeholder { color: #ccc; }
     .post-subtitle-input { font-family: var(--font-body); font-size: 1rem; font-weight: 300; font-style: italic; border: none; outline: none; background: transparent; color: var(--text-muted); width: 100%; margin-top: 0.4rem; resize: none; overflow: hidden; line-height: 1.5; }
     .post-subtitle-input::placeholder { color: #ccc; }
     .title-sep { border: none; border-top: 1px solid var(--border); margin: 0.9rem 0; }
-    /* ── ZONE ÉDITEUR ────────────────────────────────────────────
-       padding-left ≥ 50px pour laisser la place à la toolbar
-       flottante (bouton + et 6 points) sans la superposer.          */
-    .editor-canvas { max-width: 1100px; margin: 0 auto; padding: 0 2rem 0.5rem 3.5rem; width: 100%; }
+    /* Le canvas occupe tout l'espace disponible, padding-left = espace pour la toolbar */
+    .editor-canvas { padding: 0 2rem 0 4rem; width: 100%; }
     #editorjs { min-height: 40px; }
     .codex-editor__redactor { padding-bottom: 20px !important; }
 
-    /* ── SURCHARGES EDITOR.JS ────────────────────────────────────
-       On force ce-block__content à occuper toute la largeur du canvas
-       (au lieu des 650px natifs d'Editor.js) tout en compensant avec
-       un margin-left pour que la toolbar garde sa place à gauche.     */
-    .ce-block__content { max-width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; }
+    /* Forcer le contenu Editor.js à prendre toute la largeur du canvas.
+       La toolbar est positionnée en absolu à left:-34px par rapport à
+       .ce-block__content — le padding-left:4rem du canvas lui donne
+       l'espace pour s'afficher sans se superposer au texte. */
+    .ce-block__content { max-width: 100% !important; margin: 0 !important; }
     .ce-toolbar__content { max-width: 100% !important; }
-    .ce-toolbar__actions { left: -50px !important; }
     .ce-paragraph { font-family: var(--font-body) !important; font-size: 0.95rem !important; line-height: 1.65 !important; }
     .ce-block { margin-bottom: 0 !important; }
     .ce-header { font-family: var(--font-display) !important; font-weight: 700 !important; letter-spacing: -0.02em !important; margin-bottom: 0.45rem !important; margin-top: 0 !important; }
@@ -175,15 +172,15 @@
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-    /* SECTION TABS — padding-left aligné sur .editor-canvas */
-    .section-tabs-bar { max-width: 1100px; margin: 0 auto; padding: 0 2rem 0 3.5rem; width: 100%; }
+    /* SECTION TABS — même padding-left que .editor-canvas */
+    .section-tabs-bar { padding: 0 2rem 0 4rem; width: 100%; }
     .section-tabs-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem; }
     .section-tabs-nav { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg); }
     .section-tab-btn { flex: 1; font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; padding: 0.55rem 0.5rem; border: none; border-right: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.15s; text-align: center; }
     .section-tab-btn:last-child { border-right: none; }
     .section-tab-btn:hover { background: var(--accent-light); color: var(--accent); }
     .section-tab-btn.active { background: var(--accent); color: #fff; }
-    .section-editors { max-width: 1100px; margin: 0 auto; padding: 0 2rem 3rem 3.5rem; width: 100%; }
+    .section-editors { padding: 0 2rem 3rem 4rem; width: 100%; }
     .section-editor-pane { display: none; }
     .section-editor-pane.active { display: block; }
     .section-editor-title { font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 0.6rem 0 0.4rem; border-top: 1px solid var(--border); margin-top: 0.3rem; }
