@@ -99,14 +99,16 @@
        padding-left ≥ 50px pour laisser la place à la toolbar
        flottante (bouton + et 6 points) sans la superposer.          */
     .editor-canvas { max-width: 1100px; margin: 0 auto; padding: 0 2rem 0.5rem 3.5rem; width: 100%; }
-    #editorjs { min-height: 80px; }
+    #editorjs { min-height: 40px; }
     .codex-editor__redactor { padding-bottom: 20px !important; }
 
     /* ── SURCHARGES EDITOR.JS ────────────────────────────────────
-       ⚠️  NE PAS toucher .ce-block__content (max-width/margin) :
-       Editor.js positionne sa toolbar en left négatif par rapport
-       à ce conteneur — le modifier casse les boutons + et ⠿.
-       Typo alignée sur article.html : tailles, interligne, marges. */
+       On force ce-block__content à occuper toute la largeur du canvas
+       (au lieu des 650px natifs d'Editor.js) tout en compensant avec
+       un margin-left pour que la toolbar garde sa place à gauche.     */
+    .ce-block__content { max-width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; }
+    .ce-toolbar__content { max-width: 100% !important; }
+    .ce-toolbar__actions { left: -50px !important; }
     .ce-paragraph { font-family: var(--font-body) !important; font-size: 0.95rem !important; line-height: 1.65 !important; }
     .ce-block { margin-bottom: 0 !important; }
     .ce-header { font-family: var(--font-display) !important; font-weight: 700 !important; letter-spacing: -0.02em !important; margin-bottom: 0.45rem !important; margin-top: 0 !important; }
@@ -277,7 +279,6 @@
     <div class="editor-canvas">
       <div id="editorjs"></div>
     </div>
-
     <!-- BANDEAU SECTIONS -->
     <div class="section-tabs-bar">
       <div class="section-tabs-label">Sections de la page</div>
