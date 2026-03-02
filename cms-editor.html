@@ -544,6 +544,160 @@ var TextBgTool = (function() {
   return TextBg;
 })();
 
+// ── PASTE HANDLER : HTML → BLOCS EDITOR.JS ───────────────────
+function htmlToEditorBlocks(html) {
+  var div = document.createElement('div');
+  div.innerHTML = html;
+  var blocks = [];
+
+  function processNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      var text = node.textContent.trim();
+      if (text) blocks.push({ type: 'paragraph', data: { text: text } });
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    var tag = node.tagName.toLowerCase();
+
+    // Titres
+    if (/^h[1-6]$/.test(tag)) {
+      blocks.push({ type: 'header', data: { text: node.innerHTML.trim(), level: parseInt(tag[1]) } });
+      return;
+    }
+
+    // Listes non ordonnées
+    if (tag === 'ul') {
+      var items = [];
+      node.querySelectorAll('li').forEach(function(li) {
+        items.push({ content: li.innerHTML.trim() });
+      });
+      if (items.length) blocks.push({ type: 'list', data: { style: 'unordered', items: items } });
+      return;
+    }
+
+    // Listes ordonnées
+    if (tag === 'ol') {
+      var items = [];
+      node.querySelectorAll('li').forEach(function(li) {
+        items.push({ content: li.innerHTML.trim() });
+      });
+      if (items.length) blocks.push({ type: 'list', data: { style: 'ordered', items: items } });
+      return;
+    }
+
+    // Tableaux
+    if (tag === 'table') {
+      var rows = [];
+      node.querySelectorAll('tr').forEach(function(tr) {
+        var cells = [];
+        tr.querySelectorAll('th, td').forEach(function(cell) {
+          cells.push(cell.innerHTML.trim());
+        });
+        if (cells.length) rows.push(cells);
+      });
+      if (rows.length) blocks.push({ type: 'table', data: { withHeadings: node.querySelector('th') ? true : false, content: rows } });
+      return;
+    }
+
+    // Blockquote
+    if (tag === 'blockquote') {
+      var cite = node.querySelector('cite');
+      var caption = cite ? cite.textContent.trim() : '';
+      if (cite) cite.remove();
+      blocks.push({ type: 'quote', data: { text: node.innerHTML.trim(), caption: caption, alignment: 'left' } });
+      return;
+    }
+
+    // Code
+    if (tag === 'pre') {
+      var codeEl = node.querySelector('code');
+      blocks.push({ type: 'code', data: { code: codeEl ? codeEl.textContent : node.textContent } });
+      return;
+    }
+
+    // Séparateur
+    if (tag === 'hr') {
+      blocks.push({ type: 'delimiter', data: {} });
+      return;
+    }
+
+    // Image
+    if (tag === 'img') {
+      blocks.push({ type: 'image', data: { file: { url: node.src }, caption: node.alt || '', withBorder: false, withBackground: false, stretched: false } });
+      return;
+    }
+
+    // Figure avec image
+    if (tag === 'figure') {
+      var img = node.querySelector('img');
+      var figcap = node.querySelector('figcaption');
+      if (img) {
+        blocks.push({ type: 'image', data: { file: { url: img.src }, caption: figcap ? figcap.textContent.trim() : '', withBorder: false, withBackground: false, stretched: false } });
+        return;
+      }
+    }
+
+    // Paragraphe ou div avec contenu inline
+    if (tag === 'p' || tag === 'div' || tag === 'span') {
+      var inner = node.innerHTML.trim();
+      // Si le div contient des blocs enfants, on les traite individuellement
+      var hasBlockChildren = Array.from(node.children).some(function(c) {
+        return /^(p|h[1-6]|ul|ol|table|blockquote|pre|hr|figure|div)$/.test(c.tagName.toLowerCase());
+      });
+      if (hasBlockChildren) {
+        Array.from(node.childNodes).forEach(function(child) { processNode(child); });
+        return;
+      }
+      if (inner) blocks.push({ type: 'paragraph', data: { text: inner } });
+      return;
+    }
+
+    // Fallback : traiter les enfants
+    Array.from(node.childNodes).forEach(function(child) { processNode(child); });
+  }
+
+  Array.from(div.childNodes).forEach(function(child) { processNode(child); });
+
+  // Dédoublonner les blocs vides
+  return blocks.filter(function(b) {
+    if (b.type === 'paragraph' && !b.data.text.trim()) return false;
+    return true;
+  });
+}
+
+// Injecter le paste handler sur tous les éditeurs après initialisation
+function attachPasteHandler(editorInstance, holderId) {
+  editorInstance.isReady.then(function() {
+    var holder = document.getElementById(holderId);
+    if (!holder) return;
+    holder.addEventListener('paste', function(e) {
+      var html = e.clipboardData && e.clipboardData.getData('text/html');
+      if (!html || !html.trim()) return; // pas de HTML, laisser Editor.js gérer le texte brut
+
+      // Vérifier s'il y a du vrai formatage à préserver
+      var hasFormatting = /<(h[1-6]|ul|ol|table|blockquote|pre|hr|figure|img)/i.test(html);
+      if (!hasFormatting) return; // texte simple avec spans/b/i : laisser Editor.js gérer
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      var newBlocks = htmlToEditorBlocks(html);
+      if (!newBlocks.length) return;
+
+      editorInstance.save().then(function(currentData) {
+        var existing = currentData.blocks || [];
+        // Filtrer le bloc courant vide s'il est le seul
+        var filtered = existing.filter(function(b) {
+          return !(b.type === 'paragraph' && (!b.data.text || !b.data.text.trim()));
+        });
+        editorInstance.render({ blocks: filtered.concat(newBlocks) }).then(function() {
+          markDraft();
+        });
+      });
+    }, true); // capture phase pour intercepter avant Editor.js
+  });
+}
+
 // ── EDITOR.JS INIT ────────────────────────────────────────────
 var tools = {};
 if (window.Header)       tools.header      = { class: window.Header, config: { levels: [1,2,3,4,5,6], defaultLevel: 2 } };
@@ -573,6 +727,7 @@ editor = new EditorJS({
     b: true, i: true, u: true, s: true, code: true, mark: true, a: { href: true }
   }
 });
+attachPasteHandler(editor, 'editorjs');
 
 // ── ÉDITEURS DE SECTION ───────────────────────────────────────
 var SECTIONS = ['general', 'pedagogie', 'financier', 'marketing', 'commerce'];
@@ -589,6 +744,7 @@ SECTIONS.forEach(function(name) {
       b: true, i: true, u: true, s: true, code: true, mark: true, a: { href: true }
     }
   });
+  attachPasteHandler(sectionEditors[name], 'editorjs-' + name);
 });
 
 var currentSection = 'general';
