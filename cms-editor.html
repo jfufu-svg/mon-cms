@@ -665,37 +665,11 @@ function htmlToEditorBlocks(html) {
   });
 }
 
-// Injecter le paste handler sur tous les éditeurs après initialisation
+// Paste handler supprimé : Editor.js gère nativement le copier-coller de ses blocs.
+// L'ancien handler en phase capture avec stopPropagation() empêchait Editor.js
+// de recevoir l'événement et de faire son propre traitement (tableaux, listes, etc.)
 function attachPasteHandler(editorInstance, holderId) {
-  editorInstance.isReady.then(function() {
-    var holder = document.getElementById(holderId);
-    if (!holder) return;
-    holder.addEventListener('paste', function(e) {
-      var html = e.clipboardData && e.clipboardData.getData('text/html');
-      if (!html || !html.trim()) return; // pas de HTML, laisser Editor.js gérer le texte brut
-
-      // Vérifier s'il y a du vrai formatage à préserver
-      var hasFormatting = /<(h[1-6]|ul|ol|table|blockquote|pre|hr|figure|img)/i.test(html);
-      if (!hasFormatting) return; // texte simple avec spans/b/i : laisser Editor.js gérer
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      var newBlocks = htmlToEditorBlocks(html);
-      if (!newBlocks.length) return;
-
-      editorInstance.save().then(function(currentData) {
-        var existing = currentData.blocks || [];
-        // Filtrer le bloc courant vide s'il est le seul
-        var filtered = existing.filter(function(b) {
-          return !(b.type === 'paragraph' && (!b.data.text || !b.data.text.trim()));
-        });
-        editorInstance.render({ blocks: filtered.concat(newBlocks) }).then(function() {
-          markDraft();
-        });
-      });
-    }, true); // capture phase pour intercepter avant Editor.js
-  });
+  // Ne fait plus rien — Editor.js gère le paste nativement
 }
 
 // ── EDITOR.JS INIT ────────────────────────────────────────────
