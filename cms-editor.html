@@ -95,10 +95,20 @@
     .post-subtitle-input { font-family: var(--font-body); font-size: 1.05rem; font-weight: 300; font-style: italic; border: none; outline: none; background: transparent; color: var(--text-muted); width: 100%; margin-top: 0.5rem; resize: none; overflow: hidden; }
     .post-subtitle-input::placeholder { color: #ccc; }
     .title-sep { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+    /* ── ZONE ÉDITEUR PRINCIPAL ──────────────────────────────────
+       max-width aligné sur celui de .ce-block__content natif (650px)
+       pour que titres/sections/contenu soient sur la même colonne.
+       Le padding-left doit rester ≥ 50px pour laisser la place à la
+       toolbar flottante d'Editor.js (bouton + et 6 points).          */
     .editor-canvas { max-width: 740px; margin: 0 auto; padding: 0 2rem 1rem 3.5rem; width: 100%; }
     #editorjs { min-height: 80px; }
     .codex-editor__redactor { padding-bottom: 100px !important; }
-    .ce-block__content { max-width: 100% !important; margin: 0 !important; }
+
+    /* ── SURCHARGES EDITOR.JS ────────────────────────────────────
+       ⚠️  NE PAS surcharger .ce-block__content (max-width / margin).
+       Editor.js positionne sa toolbar en left négatif par rapport à
+       ce conteneur : le modifier casse l'alignement des boutons.
+       On se contente de personnaliser les polices et couleurs.       */
     .ce-paragraph { font-family: var(--font-body) !important; font-size: 1.05rem !important; line-height: 1.8 !important; }
     .ce-header { font-family: var(--font-display) !important; font-weight: 700 !important; letter-spacing: -0.02em !important; }
     h1.ce-header { font-size: 1.9rem !important; }
@@ -163,7 +173,7 @@
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-    /* SECTION TABS */
+    /* SECTION TABS — même padding-left que .editor-canvas pour aligner visuellement */
     .section-tabs-bar { max-width: 740px; margin: 0 auto 0; padding: 0 2rem 0 3.5rem; width: 100%; }
     .section-tabs-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem; }
     .section-tabs-nav { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg); }
@@ -544,7 +554,11 @@ var TextBgTool = (function() {
   return TextBg;
 })();
 
-// ── PASTE HANDLER : HTML → BLOCS EDITOR.JS ───────────────────
+// ── HTML → BLOCS EDITOR.JS ────────────────────────────────────
+// Convertit du HTML arbitraire (Word, Google Docs, site externe)
+// en tableau de blocs compatibles Editor.js.
+// Non utilisé actuellement dans le flux paste (cf. attachPasteHandler),
+// mais disponible pour un futur bouton "Importer depuis HTML".
 function htmlToEditorBlocks(html) {
   var div = document.createElement('div');
   div.innerHTML = html;
@@ -665,45 +679,32 @@ function htmlToEditorBlocks(html) {
   });
 }
 
-// Injecter le paste handler sur tous les éditeurs après initialisation
+// ── PASTE HANDLER ─────────────────────────────────────────────
+// ⚠️  NEUTRALISÉ — Editor.js gère nativement le copier-coller de
+// ses propres blocs (tableaux, listes, headers…) exactement comme
+// sur editorjs.io. L'ancien listener en phase capture (true) avec
+// stopPropagation() empêchait Editor.js de recevoir l'événement.
+//
+// htmlToEditorBlocks() est conservé au cas où on voudrait coller
+// depuis une source externe (Word, Google Docs) via un bouton dédié.
+// attachPasteHandler() est vidée pour ne rien intercepter.
 function attachPasteHandler(editorInstance, holderId) {
-  editorInstance.isReady.then(function() {
-    var holder = document.getElementById(holderId);
-    if (!holder) return;
-    holder.addEventListener('paste', function(e) {
-      var html = e.clipboardData && e.clipboardData.getData('text/html');
-      if (!html || !html.trim()) return; // pas de HTML, laisser Editor.js gérer le texte brut
-
-      // Vérifier s'il y a du vrai formatage à préserver
-      var hasFormatting = /<(h[1-6]|ul|ol|table|blockquote|pre|hr|figure|img)/i.test(html);
-      if (!hasFormatting) return; // texte simple avec spans/b/i : laisser Editor.js gérer
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      var newBlocks = htmlToEditorBlocks(html);
-      if (!newBlocks.length) return;
-
-      editorInstance.save().then(function(currentData) {
-        var existing = currentData.blocks || [];
-        // Filtrer le bloc courant vide s'il est le seul
-        var filtered = existing.filter(function(b) {
-          return !(b.type === 'paragraph' && (!b.data.text || !b.data.text.trim()));
-        });
-        editorInstance.render({ blocks: filtered.concat(newBlocks) }).then(function() {
-          markDraft();
-        });
-      });
-    }, true); // capture phase pour intercepter avant Editor.js
-  });
+  // Ne fait rien — Editor.js gère le paste nativement
 }
 
-// ── EDITOR.JS INIT ────────────────────────────────────────────
+// ── EDITOR.JS : CONFIG COMMUNE ────────────────────────────────
+// Les outils sont déclarés une seule fois et partagés entre l'éditeur
+// principal et tous les éditeurs de section.
 var tools = {};
 if (window.Header)       tools.header      = { class: window.Header, config: { levels: [1,2,3,4,5,6], defaultLevel: 2 } };
 if (window.EditorjsList) tools.list        = { class: window.EditorjsList, inlineToolbar: true, config: { defaultStyle: 'unordered' } };
 if (window.Checklist)    tools.checklist   = { class: window.Checklist, inlineToolbar: true };
-if (window.ImageTool)    tools.image       = { class: window.ImageTool, config: { uploader: { uploadByUrl: function(url){ return Promise.resolve({ success: 1, file: { url: url } }); } } } };
+if (window.ImageTool)    tools.image       = { class: window.ImageTool, config: {
+  uploader: {
+    // Upload par URL : résout immédiatement sans passer par un serveur
+    uploadByUrl: function(url) { return Promise.resolve({ success: 1, file: { url: url } }); }
+  }
+}};
 if (window.CodeTool)     tools.code        = { class: window.CodeTool };
 if (window.Quote)        tools.quote       = { class: window.Quote, inlineToolbar: true };
 if (window.Table)        tools.table       = { class: window.Table, inlineToolbar: true };
@@ -714,22 +715,44 @@ if (window.Delimiter)    tools.delimiter   = { class: window.Delimiter };
 if (window.InlineCode)   tools.inlineCode  = { class: window.InlineCode };
 if (window.Underline)    tools.underline   = { class: window.Underline };
 if (window.Marker)       tools.marker      = { class: window.Marker };
-tools.textColor     = { class: TextColorTool };
-tools.textBg        = { class: TextBgTool };
+tools.textColor = { class: TextColorTool };
+tools.textBg    = { class: TextBgTool };
 
+// Config sanitizer partagée : autorise les spans avec style (couleurs),
+// les balises inline courantes et les liens.
+var SANITIZER_CONFIG = {
+  span: { style: true },
+  b: true, i: true, u: true, s: true,
+  code: true, mark: true,
+  a: { href: true }
+};
+
+// ── DEBOUNCE ──────────────────────────────────────────────────
+// Évite d'appeler editor.save() à chaque frappe dans updateWordCount.
+function debounce(fn, delay) {
+  var timer;
+  return function() {
+    clearTimeout(timer);
+    timer = setTimeout(fn, delay);
+  };
+}
+var debouncedWordCount = debounce(updateWordCount, 400);
+
+// ── ÉDITEUR PRINCIPAL ─────────────────────────────────────────
+// Contient le "tronc commun" visible sur toutes les pages du post.
 editor = new EditorJS({
   holder: 'editorjs',
   tools: tools,
   placeholder: 'Contenu commun à toutes les sections (tronc commun)…',
-  onChange: function() { markDraft(); updateWordCount(); },
-  sanitizer: {
-    span: { style: true },
-    b: true, i: true, u: true, s: true, code: true, mark: true, a: { href: true }
-  }
+  onChange: function() { markDraft(); debouncedWordCount(); },
+  sanitizer: SANITIZER_CONFIG
 });
-attachPasteHandler(editor, 'editorjs');
+// ⚠️  attachPasteHandler supprimé : Editor.js gère nativement le
+// copier-coller de ses propres blocs. L'ancien handler en phase
+// capture avec stopPropagation() empêchait ce comportement natif.
 
 // ── ÉDITEURS DE SECTION ───────────────────────────────────────
+// Un éditeur indépendant par section de cours (pédagogie, financier…)
 var SECTIONS = ['general', 'pedagogie', 'financier', 'marketing', 'commerce'];
 var sectionEditors = {};
 
@@ -739,12 +762,9 @@ SECTIONS.forEach(function(name) {
     tools: tools,
     placeholder: 'Contenu de la section "' + name.charAt(0).toUpperCase() + name.slice(1) + '"…',
     onChange: function() { markDraft(); },
-    sanitizer: {
-      span: { style: true },
-      b: true, i: true, u: true, s: true, code: true, mark: true, a: { href: true }
-    }
+    sanitizer: SANITIZER_CONFIG
   });
-  attachPasteHandler(sectionEditors[name], 'editorjs-' + name);
+  // Pas de attachPasteHandler — cf. commentaire éditeur principal
 });
 
 var currentSection = 'general';
@@ -759,45 +779,48 @@ function switchSection(name, btn) {
 window.switchSection = switchSection;
 
 // ── SUPABASE ──────────────────────────────────────────────────
+// ⚠️  SÉCURITÉ : la clé anon est publique par conception Supabase
+// mais les règles RLS (Row Level Security) doivent être activées
+// sur la table 'articles' et le bucket 'documents' pour limiter
+// l'accès en lecture/écriture aux seuls utilisateurs autorisés.
 var SUPABASE_URL = 'https://xtmuqlftisuliyeiwfmc.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0bXVxbGZ0aXN1bGl5ZWl3Zm1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzg0OTUsImV4cCI6MjA4Nzk1NDQ5NX0.oWH0JrtE2J9OqbqOaII1Ni2gL4qDfzgLWR3rwTtjeiE';
 var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── POSTS ─────────────────────────────────────────────────────
+// ── CACHE POSTS ───────────────────────────────────────────────
+// _cachedPosts est mis à jour après chaque fetchPosts().
+// Supabase renvoie déjà les articles triés par updated_at DESC,
+// inutile de reverse() côté client.
 var _cachedPosts = [];
 
 async function fetchPosts() {
   var { data, error } = await supabase.from('articles').select('*').order('updated_at', { ascending: false });
-  if (error) { console.error(error); return []; }
+  if (error) { console.error('fetchPosts error:', error); return []; }
   _cachedPosts = (data || []).map(function(row) {
     return {
-      id: row.id,
-      title: row.title || '',
-      subtitle: row.subtitle || '',
-      category: row.category || '',
-      author: row.author || 'Rédacteur',
-      date: row.date || '',
-      slug: row.slug || '',
-      tags: row.tags ? row.tags.split(',').filter(Boolean) : [],
-      seo: row.seo || '',
-      cover: row.cover || '',
-      content: row.content || { blocks: [] },
-      sections: row.sections || {},
-      documents: Array.isArray(row.documents) ? row.documents : [],
-      updatedAt: row.updated_at || ''
+      id:         row.id,
+      title:      row.title    || '',
+      subtitle:   row.subtitle || '',
+      category:   row.category || '',
+      author:     row.author   || 'Rédacteur',
+      date:       row.date     || '',
+      slug:       row.slug     || '',
+      tags:       row.tags ? row.tags.split(',').filter(Boolean) : [],
+      seo:        row.seo      || '',
+      cover:      row.cover    || '',
+      content:    row.content  || { blocks: [] },
+      sections:   row.sections || {},
+      documents:  Array.isArray(row.documents) ? row.documents : [],
+      updatedAt:  row.updated_at || ''
     };
   });
   return _cachedPosts;
 }
 
-function getPosts() {
-  return _cachedPosts;
-}
+function getPosts() { return _cachedPosts; }
 
-function setPosts(posts) {
-  _cachedPosts = posts;
-}
-
+// ── RENDU DE LA LISTE D'ARTICLES ─────────────────────────────
+// Les posts arrivent déjà triés updated_at DESC depuis Supabase.
 function renderPostList() {
   var posts = getPosts();
   var list = document.getElementById('postList');
@@ -807,7 +830,7 @@ function renderPostList() {
     list.innerHTML = '<li style="font-size:0.75rem;color:var(--text-muted);padding:0.4rem 0.6rem;font-style:italic;">Aucun article enregistré</li>';
     return;
   }
-  posts.slice().reverse().forEach(function(post) {
+  posts.forEach(function(post) {
     var li = document.createElement('li');
     li.className = 'post-item' + (post.id === currentId ? ' active' : '');
     li.innerHTML =
@@ -895,8 +918,12 @@ function newPost() {
 }
 window.newPost = newPost;
 
-// ── SAVE ──────────────────────────────────────────────────────
+// ── SAUVEGARDE ────────────────────────────────────────────────
+// Sauvegarde tous les éditeurs en parallèle (Promise.all), puis
+// uploade les nouveaux documents vers Supabase Storage avant
+// d'envoyer l'upsert final dans la table 'articles'.
 function savePost() {
+  // Récupération en parallèle du contenu de tous les éditeurs
   var savePromises = [editor.save()].concat(SECTIONS.map(function(name) {
     return sectionEditors[name].save();
   }));
@@ -904,17 +931,20 @@ function savePost() {
     var content = results[0];
     var sectionsData = {};
     SECTIONS.forEach(function(name, i) { sectionsData[name] = results[i + 1]; });
+
     var title = document.getElementById('postTitle').value.trim();
     if (!title) { showToast('Veuillez saisir un titre', 'error'); return; }
 
     var id = currentId || ('post_' + Date.now());
 
-    // Upload documents to Supabase Storage
+    // Upload des documents non encore hébergés vers Supabase Storage.
+    // Les documents déjà uploadés (doc.url présent) sont passés tels quels.
     var uploadedDocs = [];
     for (var i = 0; i < postDocuments.length; i++) {
       var doc = postDocuments[i];
-      if (doc.url || !doc.data) { uploadedDocs.push(doc); continue; } // already uploaded
+      if (doc.url || !doc.data) { uploadedDocs.push(doc); continue; }
       try {
+        // Conversion base64 → Blob pour l'upload binaire
         var base64 = doc.data.split(',')[1];
         var byteChars = atob(base64);
         var byteArr = new Uint8Array(byteChars.length);
@@ -929,7 +959,7 @@ function savePost() {
         } else {
           showToast('Erreur upload "' + doc.name + '" : ' + upErr.message, 'error');
           console.error('Upload Storage échoué :', upErr);
-          uploadedDocs.push({ name: doc.name, size: doc.size, type: doc.type });
+          uploadedDocs.push({ name: doc.name, size: doc.size, type: doc.type }); // conservé sans URL
         }
       } catch(e) {
         showToast('Erreur upload "' + doc.name + '" : ' + e.message, 'error');
@@ -939,20 +969,21 @@ function savePost() {
     }
     postDocuments = uploadedDocs;
 
+    // Construction de la ligne à upsert dans Supabase
     var row = {
-      id: id,
-      title: title,
-      subtitle: document.getElementById('postSubtitle').value.trim(),
-      category: document.getElementById('metaCategory').value,
-      author: document.getElementById('metaAuthor').value.trim() || 'Rédacteur',
-      date: document.getElementById('metaDate').value || new Date().toISOString().split('T')[0],
-      slug: document.getElementById('metaSlug').value.trim() || slugify(title),
-      tags: tags.join(','),
-      seo: document.getElementById('metaSeo').value.trim(),
-      cover: document.getElementById('metaCover').value.trim(),
-      content: content,
-      sections: sectionsData,
-      documents: postDocuments,
+      id:         id,
+      title:      title,
+      subtitle:   document.getElementById('postSubtitle').value.trim(),
+      category:   document.getElementById('metaCategory').value,
+      author:     document.getElementById('metaAuthor').value.trim() || 'Rédacteur',
+      date:       document.getElementById('metaDate').value || new Date().toISOString().split('T')[0],
+      slug:       document.getElementById('metaSlug').value.trim() || slugify(title),
+      tags:       tags.join(','),   // stocké en CSV, splitté au chargement
+      seo:        document.getElementById('metaSeo').value.trim(),
+      cover:      document.getElementById('metaCover').value.trim(),
+      content:    content,
+      sections:   sectionsData,
+      documents:  postDocuments,
       updated_at: new Date().toISOString()
     };
 
@@ -964,7 +995,10 @@ function savePost() {
     markSaved();
     renderPostList();
     showToast('Article enregistré ✓', 'success');
-  }).catch(function(e) { showToast('Erreur lors de la sauvegarde', 'error'); });
+  }).catch(function(e) {
+    console.error('savePost error:', e);
+    showToast('Erreur lors de la sauvegarde', 'error');
+  });
 }
 window.savePost = savePost;
 
@@ -999,27 +1033,28 @@ function handleTagInput(e) {
 }
 window.handleTagInput = handleTagInput;
 
-// ── UTILS ─────────────────────────────────────────────────────
+// ── UTILITAIRES ───────────────────────────────────────────────
+
+/** Génère un slug URL à partir d'une chaîne (accents, espaces → tirets) */
 function slugify(str) {
   return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 }
 
+/** Met à jour le champ slug à partir du titre en cours */
 function updateSlug() {
-  var title = document.getElementById('postTitle').value;
-  document.getElementById('metaSlug').value = slugify(title);
+  document.getElementById('metaSlug').value = slugify(document.getElementById('postTitle').value);
 }
 window.updateSlug = updateSlug;
 
-function updateSidebarTitle() {}
-window.updateSidebarTitle = updateSidebarTitle;
-
+/** Adapte la hauteur d'un textarea à son contenu (pas de scrollbar) */
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
 }
 window.autoResize = autoResize;
 
+/** Passe le badge de statut en "Brouillon" */
 function markDraft() {
   var b = document.getElementById('statusBadge');
   b.className = 'status-badge status-draft';
@@ -1027,12 +1062,17 @@ function markDraft() {
 }
 window.markDraft = markDraft;
 
+/** Passe le badge de statut en "Enregistré" */
 function markSaved() {
   var b = document.getElementById('statusBadge');
   b.className = 'status-badge status-saved';
   b.textContent = 'Enregistré';
 }
 
+/**
+ * Compte les mots dans l'éditeur principal et met à jour le footer.
+ * Appelé via debouncedWordCount pour éviter editor.save() à chaque frappe.
+ */
 function updateWordCount() {
   editor.save().then(function(data) {
     var text = (data.blocks || []).map(function(b) {
@@ -1043,10 +1083,12 @@ function updateWordCount() {
   }).catch(function(){});
 }
 
+/** Échappe les caractères HTML pour prévenir les injections XSS */
 function escHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+/** Affiche un toast de notification (success / error / vide) pendant 2,8s */
 function showToast(msg, type) {
   var t = document.getElementById('toast');
   t.textContent = msg;
