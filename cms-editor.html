@@ -38,7 +38,7 @@
       --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
       --radius: 6px;
     }
-    html { font-size: 16px; }
+    html { font-size: 15px; } /* aligné sur article.html */
     body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
     /* HEADER */
@@ -89,33 +89,33 @@
 
     /* EDITOR AREA */
     .editor-area { flex: 1; overflow-y: auto; overflow-x: visible; display: flex; flex-direction: column; background: var(--bg); position: relative; }
-    .editor-title-area { max-width: 740px; margin: 2.5rem auto 0; padding: 0 2rem 0 3.5rem; width: 100%; }
-    .post-title-input { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; line-height: 1.2; border: none; outline: none; background: transparent; color: var(--text); width: 100%; resize: none; letter-spacing: -0.02em; overflow: hidden; }
+    .editor-title-area { max-width: 740px; margin: 1.5rem auto 0; padding: 0 2rem 0 3.5rem; width: 100%; }
+    .post-title-input { font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1.15; border: none; outline: none; background: transparent; color: var(--text); width: 100%; resize: none; letter-spacing: -0.03em; overflow: hidden; }
     .post-title-input::placeholder { color: #ccc; }
-    .post-subtitle-input { font-family: var(--font-body); font-size: 1.05rem; font-weight: 300; font-style: italic; border: none; outline: none; background: transparent; color: var(--text-muted); width: 100%; margin-top: 0.5rem; resize: none; overflow: hidden; }
+    .post-subtitle-input { font-family: var(--font-body); font-size: 1rem; font-weight: 300; font-style: italic; border: none; outline: none; background: transparent; color: var(--text-muted); width: 100%; margin-top: 0.4rem; resize: none; overflow: hidden; line-height: 1.5; }
     .post-subtitle-input::placeholder { color: #ccc; }
-    .title-sep { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
-    /* ── ZONE ÉDITEUR PRINCIPAL ──────────────────────────────────
-       max-width aligné sur celui de .ce-block__content natif (650px)
-       pour que titres/sections/contenu soient sur la même colonne.
-       Le padding-left doit rester ≥ 50px pour laisser la place à la
-       toolbar flottante d'Editor.js (bouton + et 6 points).          */
+    .title-sep { border: none; border-top: 1px solid var(--border); margin: 0.9rem 0; }
+    /* ── ZONE ÉDITEUR ────────────────────────────────────────────
+       padding-left ≥ 50px pour laisser la place à la toolbar
+       flottante (bouton + et 6 points) sans la superposer.          */
     .editor-canvas { max-width: 740px; margin: 0 auto; padding: 0 2rem 1rem 3.5rem; width: 100%; }
     #editorjs { min-height: 80px; }
     .codex-editor__redactor { padding-bottom: 100px !important; }
 
     /* ── SURCHARGES EDITOR.JS ────────────────────────────────────
-       ⚠️  NE PAS surcharger .ce-block__content (max-width / margin).
-       Editor.js positionne sa toolbar en left négatif par rapport à
-       ce conteneur : le modifier casse l'alignement des boutons.
-       On se contente de personnaliser les polices et couleurs.       */
-    .ce-paragraph { font-family: var(--font-body) !important; font-size: 1.05rem !important; line-height: 1.8 !important; }
-    .ce-header { font-family: var(--font-display) !important; font-weight: 700 !important; letter-spacing: -0.02em !important; }
-    h1.ce-header { font-size: 1.9rem !important; }
-    h2.ce-header { font-size: 1.5rem !important; }
-    h3.ce-header { font-size: 1.2rem !important; }
-    .cdx-quote__text { font-style: italic !important; font-size: 1.1rem !important; border-left: 3px solid var(--accent) !important; padding-left: 1rem !important; }
-    .ce-code__textarea { font-family: 'Courier New', monospace !important; font-size: 0.875rem !important; background: #1e2433 !important; color: #e2e8f0 !important; border-radius: var(--radius) !important; border: none !important; }
+       ⚠️  NE PAS toucher .ce-block__content (max-width/margin) :
+       Editor.js positionne sa toolbar en left négatif par rapport
+       à ce conteneur — le modifier casse les boutons + et ⠿.
+       Typo alignée sur article.html : tailles, interligne, marges. */
+    .ce-paragraph { font-family: var(--font-body) !important; font-size: 0.95rem !important; line-height: 1.65 !important; }
+    .ce-block { margin-bottom: 0 !important; }
+    .ce-header { font-family: var(--font-display) !important; font-weight: 700 !important; letter-spacing: -0.02em !important; margin-bottom: 0.45rem !important; margin-top: 0 !important; }
+    h1.ce-header { font-size: 1.6rem !important; }
+    h2.ce-header { font-size: 1.3rem !important; }
+    h3.ce-header { font-size: 1.1rem !important; }
+    h4.ce-header { font-size: 0.95rem !important; }
+    .cdx-quote__text { font-style: italic !important; font-size: 1rem !important; border-left: 3px solid var(--accent) !important; padding-left: 1rem !important; }
+    .ce-code__textarea { font-family: 'Courier New', monospace !important; font-size: 0.85rem !important; background: #1e2433 !important; color: #e2e8f0 !important; border-radius: var(--radius) !important; border: none !important; line-height: 1.5 !important; }
     .cdx-marker { background: rgba(245,235,111,0.35); padding: 2px 0; }
     .editor-footer { position: sticky; bottom: 0; background: rgba(248,247,244,0.92); border-top: 1px solid var(--border); padding: 0.35rem 2rem; text-align: right; font-size: 0.72rem; color: var(--text-muted); backdrop-filter: blur(4px); }
 
@@ -173,7 +173,7 @@
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-    /* SECTION TABS — même padding-left que .editor-canvas pour aligner visuellement */
+    /* SECTION TABS — padding-left aligné sur .editor-canvas */
     .section-tabs-bar { max-width: 740px; margin: 0 auto 0; padding: 0 2rem 0 3.5rem; width: 100%; }
     .section-tabs-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem; }
     .section-tabs-nav { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg); }
@@ -268,7 +268,7 @@
     <div class="editor-title-area">
       <textarea class="post-title-input" id="postTitle" rows="1"
         placeholder="Titre de l'article..."
-        oninput="autoResize(this); updateSlug(); updateSidebarTitle(); markDraft()"></textarea>
+        oninput="autoResize(this); updateSlug(); markDraft()"></textarea>
       <textarea class="post-subtitle-input" id="postSubtitle" rows="1"
         placeholder="Sous-titre ou accroche..."
         oninput="autoResize(this); markDraft()"></textarea>
@@ -554,11 +554,7 @@ var TextBgTool = (function() {
   return TextBg;
 })();
 
-// ── HTML → BLOCS EDITOR.JS ────────────────────────────────────
-// Convertit du HTML arbitraire (Word, Google Docs, site externe)
-// en tableau de blocs compatibles Editor.js.
-// Non utilisé actuellement dans le flux paste (cf. attachPasteHandler),
-// mais disponible pour un futur bouton "Importer depuis HTML".
+// ── PASTE HANDLER : HTML → BLOCS EDITOR.JS ───────────────────
 function htmlToEditorBlocks(html) {
   var div = document.createElement('div');
   div.innerHTML = html;
@@ -680,30 +676,19 @@ function htmlToEditorBlocks(html) {
 }
 
 // ── PASTE HANDLER ─────────────────────────────────────────────
-// ⚠️  NEUTRALISÉ — Editor.js gère nativement le copier-coller de
-// ses propres blocs (tableaux, listes, headers…) exactement comme
-// sur editorjs.io. L'ancien listener en phase capture (true) avec
-// stopPropagation() empêchait Editor.js de recevoir l'événement.
-//
-// htmlToEditorBlocks() est conservé au cas où on voudrait coller
-// depuis une source externe (Word, Google Docs) via un bouton dédié.
-// attachPasteHandler() est vidée pour ne rien intercepter.
-function attachPasteHandler(editorInstance, holderId) {
-  // Ne fait rien — Editor.js gère le paste nativement
-}
+// ⚠️  NEUTRALISÉ — Editor.js gère nativement le copier-coller.
+// L'ancien listener en capture phase + stopPropagation() bloquait
+// le comportement natif d'Editor.js (tableaux, listes, headers…).
+// htmlToEditorBlocks() est conservé pour un futur import HTML.
+function attachPasteHandler(editorInstance, holderId) { /* neutralisé */ }
 
 // ── EDITOR.JS : CONFIG COMMUNE ────────────────────────────────
-// Les outils sont déclarés une seule fois et partagés entre l'éditeur
-// principal et tous les éditeurs de section.
 var tools = {};
 if (window.Header)       tools.header      = { class: window.Header, config: { levels: [1,2,3,4,5,6], defaultLevel: 2 } };
 if (window.EditorjsList) tools.list        = { class: window.EditorjsList, inlineToolbar: true, config: { defaultStyle: 'unordered' } };
 if (window.Checklist)    tools.checklist   = { class: window.Checklist, inlineToolbar: true };
 if (window.ImageTool)    tools.image       = { class: window.ImageTool, config: {
-  uploader: {
-    // Upload par URL : résout immédiatement sans passer par un serveur
-    uploadByUrl: function(url) { return Promise.resolve({ success: 1, file: { url: url } }); }
-  }
+  uploader: { uploadByUrl: function(url) { return Promise.resolve({ success: 1, file: { url: url } }); } }
 }};
 if (window.CodeTool)     tools.code        = { class: window.CodeTool };
 if (window.Quote)        tools.quote       = { class: window.Quote, inlineToolbar: true };
@@ -718,8 +703,7 @@ if (window.Marker)       tools.marker      = { class: window.Marker };
 tools.textColor = { class: TextColorTool };
 tools.textBg    = { class: TextBgTool };
 
-// Config sanitizer partagée : autorise les spans avec style (couleurs),
-// les balises inline courantes et les liens.
+// Config sanitizer partagée entre tous les éditeurs
 var SANITIZER_CONFIG = {
   span: { style: true },
   b: true, i: true, u: true, s: true,
@@ -727,19 +711,13 @@ var SANITIZER_CONFIG = {
   a: { href: true }
 };
 
-// ── DEBOUNCE ──────────────────────────────────────────────────
-// Évite d'appeler editor.save() à chaque frappe dans updateWordCount.
+// Debounce : évite editor.save() à chaque frappe pour le compteur de mots
 function debounce(fn, delay) {
   var timer;
-  return function() {
-    clearTimeout(timer);
-    timer = setTimeout(fn, delay);
-  };
+  return function() { clearTimeout(timer); timer = setTimeout(fn, delay); };
 }
 var debouncedWordCount = debounce(updateWordCount, 400);
 
-// ── ÉDITEUR PRINCIPAL ─────────────────────────────────────────
-// Contient le "tronc commun" visible sur toutes les pages du post.
 editor = new EditorJS({
   holder: 'editorjs',
   tools: tools,
@@ -747,12 +725,8 @@ editor = new EditorJS({
   onChange: function() { markDraft(); debouncedWordCount(); },
   sanitizer: SANITIZER_CONFIG
 });
-// ⚠️  attachPasteHandler supprimé : Editor.js gère nativement le
-// copier-coller de ses propres blocs. L'ancien handler en phase
-// capture avec stopPropagation() empêchait ce comportement natif.
+// ⚠️ attachPasteHandler supprimé : Editor.js gère nativement le paste.
 
-// ── ÉDITEURS DE SECTION ───────────────────────────────────────
-// Un éditeur indépendant par section de cours (pédagogie, financier…)
 var SECTIONS = ['general', 'pedagogie', 'financier', 'marketing', 'commerce'];
 var sectionEditors = {};
 
@@ -764,7 +738,6 @@ SECTIONS.forEach(function(name) {
     onChange: function() { markDraft(); },
     sanitizer: SANITIZER_CONFIG
   });
-  // Pas de attachPasteHandler — cf. commentaire éditeur principal
 });
 
 var currentSection = 'general';
@@ -779,48 +752,45 @@ function switchSection(name, btn) {
 window.switchSection = switchSection;
 
 // ── SUPABASE ──────────────────────────────────────────────────
-// ⚠️  SÉCURITÉ : la clé anon est publique par conception Supabase
-// mais les règles RLS (Row Level Security) doivent être activées
-// sur la table 'articles' et le bucket 'documents' pour limiter
-// l'accès en lecture/écriture aux seuls utilisateurs autorisés.
 var SUPABASE_URL = 'https://xtmuqlftisuliyeiwfmc.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0bXVxbGZ0aXN1bGl5ZWl3Zm1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzg0OTUsImV4cCI6MjA4Nzk1NDQ5NX0.oWH0JrtE2J9OqbqOaII1Ni2gL4qDfzgLWR3rwTtjeiE';
 var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── CACHE POSTS ───────────────────────────────────────────────
-// _cachedPosts est mis à jour après chaque fetchPosts().
-// Supabase renvoie déjà les articles triés par updated_at DESC,
-// inutile de reverse() côté client.
+// ── POSTS ─────────────────────────────────────────────────────
 var _cachedPosts = [];
 
 async function fetchPosts() {
   var { data, error } = await supabase.from('articles').select('*').order('updated_at', { ascending: false });
-  if (error) { console.error('fetchPosts error:', error); return []; }
+  if (error) { console.error(error); return []; }
   _cachedPosts = (data || []).map(function(row) {
     return {
-      id:         row.id,
-      title:      row.title    || '',
-      subtitle:   row.subtitle || '',
-      category:   row.category || '',
-      author:     row.author   || 'Rédacteur',
-      date:       row.date     || '',
-      slug:       row.slug     || '',
-      tags:       row.tags ? row.tags.split(',').filter(Boolean) : [],
-      seo:        row.seo      || '',
-      cover:      row.cover    || '',
-      content:    row.content  || { blocks: [] },
-      sections:   row.sections || {},
-      documents:  Array.isArray(row.documents) ? row.documents : [],
-      updatedAt:  row.updated_at || ''
+      id: row.id,
+      title: row.title || '',
+      subtitle: row.subtitle || '',
+      category: row.category || '',
+      author: row.author || 'Rédacteur',
+      date: row.date || '',
+      slug: row.slug || '',
+      tags: row.tags ? row.tags.split(',').filter(Boolean) : [],
+      seo: row.seo || '',
+      cover: row.cover || '',
+      content: row.content || { blocks: [] },
+      sections: row.sections || {},
+      documents: Array.isArray(row.documents) ? row.documents : [],
+      updatedAt: row.updated_at || ''
     };
   });
   return _cachedPosts;
 }
 
-function getPosts() { return _cachedPosts; }
+function getPosts() {
+  return _cachedPosts;
+}
 
-// ── RENDU DE LA LISTE D'ARTICLES ─────────────────────────────
-// Les posts arrivent déjà triés updated_at DESC depuis Supabase.
+function setPosts(posts) {
+  _cachedPosts = posts;
+}
+
 function renderPostList() {
   var posts = getPosts();
   var list = document.getElementById('postList');
@@ -918,12 +888,8 @@ function newPost() {
 }
 window.newPost = newPost;
 
-// ── SAUVEGARDE ────────────────────────────────────────────────
-// Sauvegarde tous les éditeurs en parallèle (Promise.all), puis
-// uploade les nouveaux documents vers Supabase Storage avant
-// d'envoyer l'upsert final dans la table 'articles'.
+// ── SAVE ──────────────────────────────────────────────────────
 function savePost() {
-  // Récupération en parallèle du contenu de tous les éditeurs
   var savePromises = [editor.save()].concat(SECTIONS.map(function(name) {
     return sectionEditors[name].save();
   }));
@@ -931,20 +897,17 @@ function savePost() {
     var content = results[0];
     var sectionsData = {};
     SECTIONS.forEach(function(name, i) { sectionsData[name] = results[i + 1]; });
-
     var title = document.getElementById('postTitle').value.trim();
     if (!title) { showToast('Veuillez saisir un titre', 'error'); return; }
 
     var id = currentId || ('post_' + Date.now());
 
-    // Upload des documents non encore hébergés vers Supabase Storage.
-    // Les documents déjà uploadés (doc.url présent) sont passés tels quels.
+    // Upload documents to Supabase Storage
     var uploadedDocs = [];
     for (var i = 0; i < postDocuments.length; i++) {
       var doc = postDocuments[i];
-      if (doc.url || !doc.data) { uploadedDocs.push(doc); continue; }
+      if (doc.url || !doc.data) { uploadedDocs.push(doc); continue; } // already uploaded
       try {
-        // Conversion base64 → Blob pour l'upload binaire
         var base64 = doc.data.split(',')[1];
         var byteChars = atob(base64);
         var byteArr = new Uint8Array(byteChars.length);
@@ -959,7 +922,7 @@ function savePost() {
         } else {
           showToast('Erreur upload "' + doc.name + '" : ' + upErr.message, 'error');
           console.error('Upload Storage échoué :', upErr);
-          uploadedDocs.push({ name: doc.name, size: doc.size, type: doc.type }); // conservé sans URL
+          uploadedDocs.push({ name: doc.name, size: doc.size, type: doc.type });
         }
       } catch(e) {
         showToast('Erreur upload "' + doc.name + '" : ' + e.message, 'error');
@@ -969,21 +932,20 @@ function savePost() {
     }
     postDocuments = uploadedDocs;
 
-    // Construction de la ligne à upsert dans Supabase
     var row = {
-      id:         id,
-      title:      title,
-      subtitle:   document.getElementById('postSubtitle').value.trim(),
-      category:   document.getElementById('metaCategory').value,
-      author:     document.getElementById('metaAuthor').value.trim() || 'Rédacteur',
-      date:       document.getElementById('metaDate').value || new Date().toISOString().split('T')[0],
-      slug:       document.getElementById('metaSlug').value.trim() || slugify(title),
-      tags:       tags.join(','),   // stocké en CSV, splitté au chargement
-      seo:        document.getElementById('metaSeo').value.trim(),
-      cover:      document.getElementById('metaCover').value.trim(),
-      content:    content,
-      sections:   sectionsData,
-      documents:  postDocuments,
+      id: id,
+      title: title,
+      subtitle: document.getElementById('postSubtitle').value.trim(),
+      category: document.getElementById('metaCategory').value,
+      author: document.getElementById('metaAuthor').value.trim() || 'Rédacteur',
+      date: document.getElementById('metaDate').value || new Date().toISOString().split('T')[0],
+      slug: document.getElementById('metaSlug').value.trim() || slugify(title),
+      tags: tags.join(','),
+      seo: document.getElementById('metaSeo').value.trim(),
+      cover: document.getElementById('metaCover').value.trim(),
+      content: content,
+      sections: sectionsData,
+      documents: postDocuments,
       updated_at: new Date().toISOString()
     };
 
@@ -995,10 +957,7 @@ function savePost() {
     markSaved();
     renderPostList();
     showToast('Article enregistré ✓', 'success');
-  }).catch(function(e) {
-    console.error('savePost error:', e);
-    showToast('Erreur lors de la sauvegarde', 'error');
-  });
+  }).catch(function(e) { showToast('Erreur lors de la sauvegarde', 'error'); });
 }
 window.savePost = savePost;
 
@@ -1033,28 +992,23 @@ function handleTagInput(e) {
 }
 window.handleTagInput = handleTagInput;
 
-// ── UTILITAIRES ───────────────────────────────────────────────
-
-/** Génère un slug URL à partir d'une chaîne (accents, espaces → tirets) */
+// ── UTILS ─────────────────────────────────────────────────────
 function slugify(str) {
   return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 }
 
-/** Met à jour le champ slug à partir du titre en cours */
 function updateSlug() {
   document.getElementById('metaSlug').value = slugify(document.getElementById('postTitle').value);
 }
 window.updateSlug = updateSlug;
 
-/** Adapte la hauteur d'un textarea à son contenu (pas de scrollbar) */
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
 }
 window.autoResize = autoResize;
 
-/** Passe le badge de statut en "Brouillon" */
 function markDraft() {
   var b = document.getElementById('statusBadge');
   b.className = 'status-badge status-draft';
@@ -1062,17 +1016,12 @@ function markDraft() {
 }
 window.markDraft = markDraft;
 
-/** Passe le badge de statut en "Enregistré" */
 function markSaved() {
   var b = document.getElementById('statusBadge');
   b.className = 'status-badge status-saved';
   b.textContent = 'Enregistré';
 }
 
-/**
- * Compte les mots dans l'éditeur principal et met à jour le footer.
- * Appelé via debouncedWordCount pour éviter editor.save() à chaque frappe.
- */
 function updateWordCount() {
   editor.save().then(function(data) {
     var text = (data.blocks || []).map(function(b) {
@@ -1083,12 +1032,10 @@ function updateWordCount() {
   }).catch(function(){});
 }
 
-/** Échappe les caractères HTML pour prévenir les injections XSS */
 function escHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/** Affiche un toast de notification (success / error / vide) pendant 2,8s */
 function showToast(msg, type) {
   var t = document.getElementById('toast');
   t.textContent = msg;
