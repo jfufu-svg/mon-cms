@@ -88,7 +88,7 @@
     .tag-input { border: none; outline: none; background: transparent; font-family: var(--font-body); font-size: 0.8rem; min-width: 55px; color: var(--text); }
 
     /* EDITOR AREA */
-    .editor-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--bg); position: relative; }
+    .editor-area { flex: 1; overflow-y: auto; overflow-x: visible; display: flex; flex-direction: column; background: var(--bg); position: relative; }
     .editor-title-area { max-width: 740px; margin: 2.5rem auto 0; padding: 0 2rem; width: 100%; }
     .post-title-input { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; line-height: 1.2; border: none; outline: none; background: transparent; color: var(--text); width: 100%; resize: none; letter-spacing: -0.02em; overflow: hidden; }
     .post-title-input::placeholder { color: #ccc; }
@@ -97,11 +97,8 @@
     .title-sep { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
     .editor-canvas { max-width: 740px; margin: 0 auto; padding: 0 2rem 1rem; width: 100%; }
     #editorjs { min-height: 80px; }
-    .codex-editor__redactor { padding-bottom: 20px !important; }
+    .codex-editor__redactor { padding-bottom: 100px !important; }
     .ce-block__content { max-width: 100% !important; }
-    .ce-toolbar__plus { left: -34px !important; right: auto !important; }
-    .ce-toolbar__actions { left: -34px !important; right: auto !important; }
-    .ce-toolbar { left: 0 !important; }
     .ce-paragraph { font-family: var(--font-body) !important; font-size: 1.05rem !important; line-height: 1.8 !important; }
     .ce-header { font-family: var(--font-display) !important; font-weight: 700 !important; letter-spacing: -0.02em !important; }
     h1.ce-header { font-size: 1.9rem !important; }
@@ -760,7 +757,7 @@ function savePost() {
     var uploadedDocs = [];
     for (var i = 0; i < postDocuments.length; i++) {
       var doc = postDocuments[i];
-      if (doc.url) { uploadedDocs.push(doc); continue; } // already uploaded
+      if (doc.url || !doc.data) { uploadedDocs.push(doc); continue; } // already uploaded
       try {
         var base64 = doc.data.split(',')[1];
         var byteChars = atob(base64);
