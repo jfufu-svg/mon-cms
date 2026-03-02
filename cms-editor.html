@@ -729,24 +729,12 @@ var SECTIONS = ['general', 'pedagogie', 'financier', 'marketing', 'commerce'];
 var sectionEditors = {};
 
 SECTIONS.forEach(function(name) {
-  // Afficher temporairement le panneau le temps qu'Editor.js s'initialise
-  // (sinon la toolbar ne peut pas calculer sa position dans un display:none)
-  var pane = document.getElementById('section-' + name);
-  pane.style.display = 'block';
-
   sectionEditors[name] = new EditorJS({
     holder: 'editorjs-' + name,
     tools: tools,
     placeholder: 'Contenu de la section "' + name.charAt(0).toUpperCase() + name.slice(1) + '"…',
     onChange: function() { markDraft(); },
     sanitizer: SANITIZER_CONFIG
-  });
-
-  // Masquer à nouveau une fois prêt (sauf si c'est la section active)
-  sectionEditors[name].isReady.then(function() {
-    if (!pane.classList.contains('active')) {
-      pane.style.display = '';
-    }
   });
 });
 
