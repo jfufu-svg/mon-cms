@@ -89,16 +89,16 @@
 
     /* EDITOR AREA */
     .editor-area { flex: 1; overflow-y: auto; overflow-x: visible; display: flex; flex-direction: column; background: var(--bg); position: relative; }
-    .editor-title-area { max-width: 740px; margin: 2.5rem auto 0; padding: 0 2rem; width: 100%; }
+    .editor-title-area { max-width: 740px; margin: 2.5rem auto 0; padding: 0 2rem 0 3.5rem; width: 100%; }
     .post-title-input { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; line-height: 1.2; border: none; outline: none; background: transparent; color: var(--text); width: 100%; resize: none; letter-spacing: -0.02em; overflow: hidden; }
     .post-title-input::placeholder { color: #ccc; }
     .post-subtitle-input { font-family: var(--font-body); font-size: 1.05rem; font-weight: 300; font-style: italic; border: none; outline: none; background: transparent; color: var(--text-muted); width: 100%; margin-top: 0.5rem; resize: none; overflow: hidden; }
     .post-subtitle-input::placeholder { color: #ccc; }
     .title-sep { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
-    .editor-canvas { max-width: 740px; margin: 0 auto; padding: 0 2rem 1rem; width: 100%; }
+    .editor-canvas { max-width: 740px; margin: 0 auto; padding: 0 2rem 1rem 3.5rem; width: 100%; }
     #editorjs { min-height: 80px; }
     .codex-editor__redactor { padding-bottom: 100px !important; }
-    .ce-block__content { max-width: 100% !important; }
+    .ce-block__content { max-width: 100% !important; margin: 0 !important; }
     .ce-paragraph { font-family: var(--font-body) !important; font-size: 1.05rem !important; line-height: 1.8 !important; }
     .ce-header { font-family: var(--font-display) !important; font-weight: 700 !important; letter-spacing: -0.02em !important; }
     h1.ce-header { font-size: 1.9rem !important; }
@@ -164,14 +164,14 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
     /* SECTION TABS */
-    .section-tabs-bar { max-width: 740px; margin: 0 auto 0; padding: 0 2rem; width: 100%; }
+    .section-tabs-bar { max-width: 740px; margin: 0 auto 0; padding: 0 2rem 0 3.5rem; width: 100%; }
     .section-tabs-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem; }
     .section-tabs-nav { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg); }
     .section-tab-btn { flex: 1; font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; padding: 0.55rem 0.5rem; border: none; border-right: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.15s; text-align: center; }
     .section-tab-btn:last-child { border-right: none; }
     .section-tab-btn:hover { background: var(--accent-light); color: var(--accent); }
     .section-tab-btn.active { background: var(--accent); color: #fff; }
-    .section-editors { max-width: 740px; margin: 0 auto; padding: 0 2rem 5rem; width: 100%; }
+    .section-editors { max-width: 740px; margin: 0 auto; padding: 0 2rem 5rem 3.5rem; width: 100%; }
     .section-editor-pane { display: none; }
     .section-editor-pane.active { display: block; }
     .section-editor-title { font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 1rem 0 0.5rem; border-top: 1px solid var(--border); margin-top: 0.5rem; }
@@ -665,11 +665,37 @@ function htmlToEditorBlocks(html) {
   });
 }
 
-// Paste handler supprimé : Editor.js gère nativement le copier-coller de ses blocs.
-// L'ancien handler en phase capture avec stopPropagation() empêchait Editor.js
-// de recevoir l'événement et de faire son propre traitement (tableaux, listes, etc.)
+// Injecter le paste handler sur tous les éditeurs après initialisation
 function attachPasteHandler(editorInstance, holderId) {
-  // Ne fait plus rien — Editor.js gère le paste nativement
+  editorInstance.isReady.then(function() {
+    var holder = document.getElementById(holderId);
+    if (!holder) return;
+    holder.addEventListener('paste', function(e) {
+      var html = e.clipboardData && e.clipboardData.getData('text/html');
+      if (!html || !html.trim()) return; // pas de HTML, laisser Editor.js gérer le texte brut
+
+      // Vérifier s'il y a du vrai formatage à préserver
+      var hasFormatting = /<(h[1-6]|ul|ol|table|blockquote|pre|hr|figure|img)/i.test(html);
+      if (!hasFormatting) return; // texte simple avec spans/b/i : laisser Editor.js gérer
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      var newBlocks = htmlToEditorBlocks(html);
+      if (!newBlocks.length) return;
+
+      editorInstance.save().then(function(currentData) {
+        var existing = currentData.blocks || [];
+        // Filtrer le bloc courant vide s'il est le seul
+        var filtered = existing.filter(function(b) {
+          return !(b.type === 'paragraph' && (!b.data.text || !b.data.text.trim()));
+        });
+        editorInstance.render({ blocks: filtered.concat(newBlocks) }).then(function() {
+          markDraft();
+        });
+      });
+    }, true); // capture phase pour intercepter avant Editor.js
+  });
 }
 
 // ── EDITOR.JS INIT ────────────────────────────────────────────
