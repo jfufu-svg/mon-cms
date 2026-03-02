@@ -630,7 +630,7 @@ async function fetchPosts() {
       cover: row.cover || '',
       content: row.content || { blocks: [] },
       sections: row.sections || {},
-      documents: [],
+      documents: Array.isArray(row.documents) ? row.documents : [],
       updatedAt: row.updated_at || ''
     };
   });
