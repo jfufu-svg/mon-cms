@@ -746,11 +746,14 @@ function switchSection(name, btn) {
   document.getElementById('section-' + name).classList.add('active');
   btn.classList.add('active');
   currentSection = name;
-  // Forcer Editor.js à recalculer la position de sa toolbar
-  // (elle est calculée au moment du rendu, pas dans un display:none)
+  // Après affichage, forcer Editor.js à recalculer la toolbar
+  // en cliquant dans le holder — la toolbar se repositionne correctement
   if (sectionEditors[name]) {
     sectionEditors[name].isReady.then(function() {
-      window.dispatchEvent(new Event('resize'));
+      setTimeout(function() {
+        var holder = document.getElementById('editorjs-' + name);
+        if (holder) holder.click();
+      }, 50);
     });
   }
 }
